@@ -453,7 +453,7 @@ cmd_up() {
 	get_real_interface && die "\`$INTERFACE' already exists as \`$REAL_INTERFACE'"
 	trap 'del_if; del_routes; exit' INT TERM EXIT
 	execute_hooks "${PRE_UP[@]}"
-	add_if
+#	add_if
 	set_config
 	for i in "${ADDRESSES[@]}"; do
 		add_addr "$i"
@@ -467,6 +467,7 @@ cmd_up() {
 	[[ ${#DNS[@]} -gt 0 ]] && set_dns
 	monitor_daemon
 	execute_hooks "${POST_UP[@]}"
+	add_if
 	trap - INT TERM EXIT
 }
 
