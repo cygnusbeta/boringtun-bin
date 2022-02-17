@@ -1,0 +1,61 @@
+#!/bin/bash
+set -eu
+
+export os='linux'
+export shell='bash'
+export term='bash'
+
+"${shell}" <<'_EOS_'
+set -eu
+
+me="$(whoami)"
+home_me="${HOME}"
+
+cd ~
+mkdir -p wg && cd wg
+
+chmod 600 ./wg-client.conf
+
+sudo "${shell}" <<_EOSROOT_
+set -eux
+
+sudo -u "${me}" "${shell}" <<'_EOSME_'
+set -eux
+
+if [[ "${os}" == 'mac' ]]; then
+    if ! command -v "${term}" &> /dev/null
+    then
+        echo "Installing bash v4+..."
+        brew install bash
+    fi
+    if ! command -v watch &> /dev/null
+    then
+        echo "Installing watch..."
+        brew install watch
+    fi
+fi
+
+fnames=('wg-quick' 'wg' 'boringtun')
+for fname in "\${fnames[@]}" ; do
+    curl -L -o "\${fname}" "https://raw.githubusercontent.com/cygnusbeta/boringtun-bin/master/${os}/\${fname}"
+    chmod +x "\${fname}"
+done
+
+
+_EOSME_
+
+down() {
+    sudo WG_QUICK_USERSPACE_IMPLEMENTATION=${home_me}/wg/boringtun WG_SUDO=1 "${term}" ./wg-quick down ./wg-client.conf
+}
+
+up() {
+    trap 'trap - INT TERM EXIT; down' INT TERM EXIT
+    sudo WG_QUICK_USERSPACE_IMPLEMENTATION=${home_me}/wg/boringtun WG_SUDO=1 "${term}" ./wg-quick up ./wg-client.conf
+#    sleep 86400
+    sudo watch ./wg
+}
+
+up
+
+_EOSROOT_
+_EOS_
