@@ -14,8 +14,6 @@ home_me="${HOME}"
 cd ~
 mkdir -p wg && cd wg
 
-chmod 600 ./wg-client.conf
-
 sudo "${shell}" <<_EOSROOT_
 set -eux
 
